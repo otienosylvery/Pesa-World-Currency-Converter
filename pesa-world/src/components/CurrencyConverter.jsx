@@ -9,7 +9,6 @@ const CurrencyConverter = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
 
-  // Fetch currency symbols from Frankfurter API
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
@@ -23,11 +22,9 @@ const CurrencyConverter = () => {
         setIsLoading(false);
       }
     };
-
     fetchCurrencies();
   }, []);
 
-  // Automatic conversion whenever amount or currencies change
   useEffect(() => {
     const convert = async () => {
       if (!amount || amount <= 0 || fromCurrency === toCurrency) {
@@ -35,7 +32,7 @@ const CurrencyConverter = () => {
         return;
       }
 
-      setIsConverting(true); // start loading indicator
+      setIsConverting(true);
       try {
         const url = `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`;
         const response = await fetch(url);
@@ -45,10 +42,9 @@ const CurrencyConverter = () => {
         console.error("Error converting currency:", error);
         setResult("Error");
       } finally {
-        setIsConverting(false); // stop loading indicator
+        setIsConverting(false);
       }
     };
-
     convert();
   }, [amount, fromCurrency, toCurrency]);
 
@@ -62,38 +58,73 @@ const CurrencyConverter = () => {
   const sortedCurrencyCodes = Object.keys(currencies).sort();
 
   return (
-    <div className="converter">
-      <h2>Pesa World Currency Converter</h2>
+    <div
+      className="converter"
+      style={{
+        maxWidth: "500px",
+        margin: "0 auto",
+        padding: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "15px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <h2 style={{ textAlign: "center" }}>Pesa World Currency Converter</h2>
 
       <input
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
+        placeholder="Enter amount"
+        style={{ padding: "8px", fontSize: "16px", width: "100%" }}
       />
 
-      <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
-        {sortedCurrencyCodes.map((code) => (
-          <option key={code} value={code}>
-            {code} - {currencies[code]}
-          </option>
-        ))}
-      </select>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <select
+          value={fromCurrency}
+          onChange={(e) => setFromCurrency(e.target.value)}
+          style={{ flex: 1, padding: "8px", fontSize: "16px" }}
+        >
+          {sortedCurrencyCodes.map((code) => (
+            <option key={code} value={code}>
+              {code} - {currencies[code]}
+            </option>
+          ))}
+        </select>
 
-      <span>
-        <button type="button" onClick={handleSwap}>
+        <button
+          type="button"
+          onClick={handleSwap}
+          style={{ padding: "8px 12px", fontSize: "16px" }}
+        >
           ⇅ Swap
         </button>
-      </span>
 
-      <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)}>
-        {sortedCurrencyCodes.map((code) => (
-          <option key={code} value={code}>
-            {code} - {currencies[code]}
-          </option>
-        ))}
-      </select>
+        <select
+          value={toCurrency}
+          onChange={(e) => setToCurrency(e.target.value)}
+          style={{ flex: 1, padding: "8px", fontSize: "16px" }}
+        >
+          {sortedCurrencyCodes.map((code) => (
+            <option key={code} value={code}>
+              {code} - {currencies[code]}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {isConverting ? <p>Converting...</p> : result && <h3>Result: {result}</h3>}
+      {isConverting ? (
+        <div className="spinner" style={{ textAlign: "center" }}>
+          
+        </div>
+      ) : (
+        result && (
+          <h3 style={{ textAlign: "center" }}>
+            {amount} {fromCurrency} = {result} {toCurrency}
+          </h3>
+        )
+      )}
     </div>
   );
 };
