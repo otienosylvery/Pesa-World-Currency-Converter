@@ -1,7 +1,28 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "compilerOptions": {
+    /* Base Options */
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    
+    /* React and JavaScript Interoperability */
+    "allowJs": true,                     // 👈 Crucial: Allows TypeScript to import and compile .js and .jsx files.
+    "jsx": "react-jsx",                  // 👈 Specifies how JSX is emitted (use "react" if you're on an older React version).
+    "moduleResolution": "node",          // Required for most Node.js/React environments.
+    "esModuleInterop": true,             // Enables compatibility for default imports from CommonJS modules (like many npm packages).
+
+    /* Strictness and Typing */
+    "strict": true,                      // Recommended for a robust TypeScript experience.
+    "noImplicitAny": true,               // Prevents implicit 'any' types. (This is what caused your error when importing the .jsx file).
+    "skipLibCheck": true,                // Speeds up compilation by skipping type checking of declaration files.
+    
+    /* Project Paths */
+    "outDir": "./dist",
+    "rootDir": "./src",
+    
+    /* Resolving Modules */
+    "resolveJsonModule": true,
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
