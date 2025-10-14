@@ -1,73 +1,101 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect } from "react";
 
 const CurrencyConverter = () => {
-    const [amount, setAmount] = useState(1);
-    const[fromCurrency, setFromCurrency] = useState("KES");
-    const [toCurrency, setToCurrency] = useState("USD");
-    const[result, setResult]= useState(null);
+  const [amount, setAmount] = useState(1);
+  const [fromCurrency, setFromCurrency] = useState("USD");
+  const [toCurrency, setToCurrency] = useState("EUR");
+  const [result, setResult] = useState(null);
+  const [currencies, setCurrencies] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConverting, setIsConverting] = useState(false);
 
-    const handleConvert = async () => {
-  // 1. Prevent invalid requests (e.g. empty or negative)
-  if (!amount || amount <= 0) {
-    alert("Please enter a valid amount");
-    return;
-  }
+  // Fetch currency symbols from Frankfurter API
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await fetch("https://api.frankfurter.app/currencies");
+        const data = await response.json();
+        setCurrencies(data || {});
+      } catch (error) {
+        console.error("Error fetching currencies:", error);
+        setCurrencies({});
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // 2. Build the API URL dynamically
-  const url = `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`;
+    fetchCurrencies();
+  }, []);
 
-  try {
-    // 3. Fetch data from API
-    const response = await fetch(url);
+  // Automatic conversion whenever amount or currencies change
+  useEffect(() => {
+    const convert = async () => {
+      if (!amount || amount <= 0 || fromCurrency === toCurrency) {
+        setResult(amount ? amount.toFixed(2) : "");
+        return;
+      }
 
-    // 4. Convert response to JS object
-    const data = await response.json();
+      setIsConverting(true); // start loading indicator
+      try {
+        const url = `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        setResult(data.rates[toCurrency].toFixed(2));
+      } catch (error) {
+        console.error("Error converting currency:", error);
+        setResult("Error");
+      } finally {
+        setIsConverting(false); // stop loading indicator
+      }
+    };
 
-    // 5. Extract the converted value
-    const converted = data.rates[toCurrency];
+    convert();
+  }, [amount, fromCurrency, toCurrency]);
 
-    // 6. Save result to state
-    setResult(converted.toFixed(2));
-  } catch (error) {
-    // 7. Handle network or API errors
-    alert("Error fetching conversion rate");
-    console.error(error);
-  }
-};
+  const handleSwap = () => {
+    setFromCurrency(toCurrency);
+    setToCurrency(fromCurrency);
+  };
+
+  if (isLoading) return <p>Loading currencies...</p>;
+
+  const sortedCurrencyCodes = Object.keys(currencies).sort();
 
   return (
-    <div className='converter'>
-        <h2>Pesa World Currency Converter</h2>
+    <div className="converter">
+      <h2>Pesa World Currency Converter</h2>
 
-        <input
-        type='number'
+      <input
+        type="number"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}/>
+        onChange={(e) => setAmount(e.target.value)}
+      />
 
-        <select
-        value={fromCurrency} onChange={(e)=> setFromCurrency(e.target.value)}>
-        <option value="EUR">EUR</option>
-        <option value="USD">USD</option>
-        //add more currencies later
+      <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
+        {sortedCurrencyCodes.map((code) => (
+          <option key={code} value={code}>
+            {code} - {currencies[code]}
+          </option>
+        ))}
+      </select>
 
-        </select>
-        <span>to</span>
+      <span>
+        <button type="button" onClick={handleSwap}>
+          ⇅ Swap
+        </button>
+      </span>
 
-        <select
-        value={toCurrency} onChange={(e)=> setToCurrency(e.target.value)}>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-        //add more currencies later
+      <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)}>
+        {sortedCurrencyCodes.map((code) => (
+          <option key={code} value={code}>
+            {code} - {currencies[code]}
+          </option>
+        ))}
+      </select>
 
-        </select>
-
-        <button onClick={handleConvert}>Convert</button>
-
-        {result && <h3>Result: {result}</h3>}
-      
+      {isConverting ? <p>Converting...</p> : result && <h3>Result: {result}</h3>}
     </div>
   );
 };
 
-export default CurrencyConverter
+export default CurrencyConverter;
