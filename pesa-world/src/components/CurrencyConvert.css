@@ -1,0 +1,17 @@
+.currency-select {
+  font-size: 16px;
+  width: 100%;
+}
+
+.currency-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.currency-option img {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
